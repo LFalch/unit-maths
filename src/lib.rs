@@ -1,7 +1,12 @@
-use std::ops::{Add, Mul, Sub, Div, Neg};
-use std::fmt::{self, Display};
+extern crate num;
 
-#[derive(Debug, PartialEq, Eq, Default, Copy, Clone)]
+use std::ops::{Add, Mul, Sub, Div};
+use std::fmt::{self, Display};
+use std::collections::HashMap;
+
+use num::{Num};
+
+#[derive(Debug, PartialEq, Eq, Default, Copy, Clone, Hash)]
 pub struct Dimension {
     length: i16,
     time: i16,
@@ -50,7 +55,7 @@ macro_rules! dims {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 if f.alternate() {$(
                     if *self== $cnst {
-                        return $display_name.fmt(f);
+                        return Display::fmt($display_name, f);
                     }
                 )*}
 
@@ -87,7 +92,7 @@ macro_rules! dims {
                 if s.is_empty() && f.alternate() {
                     s.push_str("Dimensionless")
                 }
-                s.fmt(f)
+                Display::fmt(&s, f)
             }
         }
     );
@@ -111,6 +116,16 @@ dims!{
     ACCELERATION, "Acceleration"; {length:1,time:-2},
     MOLAR_MASS, "Molar Mass"; {substance_amount:1,mass: -1},
     FORCE, "Force"; {mass:1,length:1,time:-2},
+
+    ENERGY, "Energy"; {mass:1,length:2,time:-2},
+
+    POWER, "Power"; {mass:1,length:2,time:-3},
+    VOLTAGE, "Voltage"; {mass:1,length:2,time:-3,current:-1},
+    RESISTANCE, "Resistance"; {mass:1,length:2,time:-3,current:-2},
+    CHARGE, "Charge"; {current:1,time:1},
+
+    PRESSURE, "Pressure"; {mass:1,length:-1,time:-2},
+
 }
 
 impl Add for Dimension {
@@ -203,22 +218,164 @@ pub const SI: BaseUnits = BaseUnits {
     luminous_intensity: "cd",
 };
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub struct Value<N>(pub N, pub Dimension) where N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg;
+pub struct UnitSystem<N: Num> {
+    pub base: BaseUnits,
+    pub units: HashMap<&'static str, Unit<N>>
+}
 
-impl<N: Display> Display for Value<N>
-where N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)?;
-        if f.alternate() {
-            f.write_fmt(format_args!(" ({:#})", self.1))
-        } else {
-            f.write_fmt(format_args!(" ({})", self.1))
+impl<N: Num + From<u32> + From<f32> + Copy> UnitSystem<N> {
+    pub fn si() -> Self {
+        let mut units = HashMap::with_capacity(20);
+
+        units.insert(SI.length, Unit::new(LENGTH));
+        units.insert(SI.time, Unit::new(TIME));
+        units.insert(SI.mass, Unit::new(MASS));
+        units.insert(SI.current, Unit::new(CURRENT));
+        units.insert(SI.temperature, Unit::new(TEMPERATURE));
+        units.insert(SI.substance_amount, Unit::new(AMOUNT_OF_SUBSTANCE));
+        units.insert(SI.luminous_intensity, Unit::new(LUMINOUS_INTENSITY));
+
+        units.insert("J", Unit::new(ENERGY));
+        units.insert("min", Unit::with_factor(TIME, N::from(60)));
+        units.insert("h", Unit::with_factor(TIME, N::from(3600)));
+        units.insert("km", Unit::with_factor(LENGTH, N::from(1000)));
+        units.insert("g", Unit::with_factor(MASS, N::from(1e-3)));
+        units.insert("Hz", Unit::new(FREQUENCY));
+        units.insert("L", Unit::with_factor(VOLUME, N::from(1e-3)));
+        units.insert("N", Unit::new(FORCE));
+        units.insert("W", Unit::new(POWER));
+        units.insert("V", Unit::new(VOLTAGE));
+        units.insert("Ω", Unit::new(RESISTANCE));
+        units.insert("C", Unit::new(CHARGE));
+        units.insert("Pa", Unit::new(PRESSURE));
+
+        UnitSystem {
+            base: SI,
+            units
+        }
+    }
+    pub fn add_unit(&mut self, name: &'static str, unit: Unit<N>) -> Option<Unit<N>> {
+        self.units.insert(name, unit)
+    }
+    pub fn get_unit(&self, name: &str) -> Unit<N> {
+        self.units[name]
+    }
+    pub fn val(&self, val: N, unit: &str) -> Value<N> {
+        Value(val, self.units[unit])
+    }
+    pub fn display<'a>(&'a self, val: &'a Value<N>) -> UnitDisplay<'a, N> {
+        UnitDisplay{
+            val,
+            sys: self,
         }
     }
 }
 
-impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Add for Value<N> {
+pub struct UnitDisplay<'a, N: 'a + Num> {
+    val: &'a Value<N>,
+    sys: &'a UnitSystem<N>,
+}
+
+impl<'a, N: 'a + Num + Display + Copy> Display for UnitDisplay<'a, N> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut n = "";
+        for (name, unit) in self.sys.units.iter() {
+            if &self.val.1 == unit {
+                n = name;
+            }
+        }
+
+        if !n.is_empty() {
+            Display::fmt(&self.val.0, f)?;
+            return write!(f, "{}", n)
+        }
+
+        let Dimension{mass,length,time,current,temperature,substance_amount,luminous_intensity} = self.val.1.dimension;
+        let mut s = String::new();
+        if mass != 0 {
+            s.push_str(self.sys.base.mass);
+            s.push_str(&to_superscript(&format!("{}",mass)));
+        }
+        if length != 0 {
+            s.push_str(self.sys.base.length);
+            s.push_str(&to_superscript(&format!("{}", length)));
+        }
+        if time != 0 {
+            s.push_str(self.sys.base.time);
+            s.push_str(&to_superscript(&format!("{}", time)));
+        }
+        if current != 0 {
+            s.push_str(self.sys.base.current);
+            s.push_str(&to_superscript(&format!("{}", current)));
+        }
+        if temperature != 0 {
+            s.push_str(self.sys.base.temperature);
+            s.push_str(&to_superscript(&format!("{}", temperature)));
+        }
+        if substance_amount != 0 {
+            s.push_str(self.sys.base.substance_amount);
+            s.push_str(&to_superscript(&format!("{}", substance_amount)));
+        }
+        if luminous_intensity != 0 {
+            s.push_str(self.sys.base.luminous_intensity);
+            s.push_str(&to_superscript(&format!("{}", luminous_intensity)));
+        }
+        Display::fmt(&(self.val.0 * self.val.1.factor), f)?;
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Copy, Clone)]
+pub struct Unit<N: Num> {
+    pub dimension: Dimension,
+    pub factor: N
+}
+
+impl<N: Num> Unit<N> {
+    pub fn new(dimension: Dimension) -> Self {
+        Unit {
+            factor: N::one(),
+            dimension
+        }
+    }
+    pub fn with_factor(dimension: Dimension, factor: N) -> Self {
+        Unit {
+            factor,
+            dimension
+        }
+    }
+}
+
+impl<N: Num> Add for Unit<N> {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        let Unit{factor, dimension} = self;
+        let Unit{factor:f, dimension:d} = rhs;
+        Unit{
+            factor: factor*f,
+            dimension: dimension+d
+        }
+    }
+}
+
+impl<N: Num> Sub for Unit<N> {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self::Output {
+        let Unit{factor, dimension} = self;
+        let Unit{factor:f, dimension:d} = rhs;
+        Unit{
+            factor: factor/f,
+            dimension: dimension-d
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+pub struct Value<N: Num>(pub N, pub Unit<N>);
+
+use std::fmt::Debug;
+
+impl<N: Num + Debug> Add for Value<N> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
         assert_eq!(self.1, rhs.1);
@@ -226,7 +383,7 @@ impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Add
     }
 }
 
-impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Sub for Value<N> {
+impl<N: Num + Debug> Sub for Value<N> {
     type Output = Self;
     fn sub(self, rhs: Self) -> Self {
         assert_eq!(self.1, rhs.1);
@@ -234,14 +391,14 @@ impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Sub
     }
 }
 
-impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Mul for Value<N> {
+impl<N: Num> Mul for Value<N> {
     type Output = Self;
     fn mul(self, rhs: Self) -> Self {
         Value(self.0*rhs.0, self.1+rhs.1)
     }
 }
 
-impl<N: Add<Output=N> + Mul<Output=N> + Sub<Output=N> + Div<Output=N> + Neg> Div for Value<N> {
+impl<N: Num> Div for Value<N> {
     type Output = Self;
     fn div(self, rhs: Self) -> Self {
         Value(self.0/rhs.0, self.1-rhs.1)
