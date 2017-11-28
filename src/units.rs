@@ -78,11 +78,14 @@ impl<N: Float> UnitSystem<N> {
     pub fn get_unit(&self, name: &str) -> Option<Unit<N>> {
         self.units.get(name).cloned()
     }
-    pub fn val(&self, val: N, unit: &str) -> Value<N> {
-        Value(val, self.units[unit])
+    pub fn unit_from_str(&self, s: &str) -> Option<Unit<N>> {
+        unit_from_str(self, s)
+    }
+    pub fn val(&self, val: N, unit_str: &str) -> Option<Value<N>> {
+        Some(Value(val, self.unit_from_str(unit_str)?))
     }
     pub fn as_(&self, val: Value<N>, unit: &str) -> Value<N> {
-        self.cast(val, &self[unit])
+        self.cast(val, &self.unit_from_str(unit).unwrap())
     }
     pub fn cast(&self, val: Value<N>, unit: &Unit<N>) -> Value<N> {
         if val.1.dimension == unit.dimension {

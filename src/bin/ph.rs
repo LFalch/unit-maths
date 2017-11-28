@@ -22,21 +22,19 @@ fn main() {
     let si = UnitSystem::<f64>::si();
 
     // Strong acid
-    let vol1 = si.val(30., "mL");
-    let con1 = si.val(0.1, "M");
+    let vol1 = si.val(30., "mL").unwrap();
+    let con1 = si.val(0.1, "M").unwrap();
     // Strong base
-    let vol2 = si.val(15., "mL");
-    let con2 = si.val(0.1, "M");
-
-    let m3 = si["m"]*3;
+    let vol2 = si.val(15., "mL").unwrap();
+    let con2 = si.val(0.1, "M").unwrap();
 
     print_eval!(vol1, si);
     print_eval!(si.as_(vol1, "L"), si);
-    print_eval!(si.cast(vol1, &m3), si);
+    print_eval!(si.as_(vol1, "m³"), si);
     print_eval!(con1, si);
     print_eval!(vol2, si);
     print_eval!(si.as_(vol2, "L"), si);
-    print_eval!(si.cast(vol2, &m3), si);
+    print_eval!(si.as_(vol2, "m³"), si);
     print_eval!(con2, si);
 
     print_eval!(vol1*con1, si, amt1);
