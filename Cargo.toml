@@ -5,3 +5,8 @@ authors = ["LFalch <lucas@wasd.dk>"]
 
 [dependencies]
 num = "0.1"
+
+
+[[bin]]
+name = "unit"
+path = "src/unit/main.rs"
