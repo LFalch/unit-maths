@@ -1,7 +1,5 @@
 use super::*;
 
-use std::mem::replace;
-
 use num::Float;
 
 #[derive(Debug)]
@@ -11,20 +9,28 @@ enum BuildState {
 }
 
 pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Option<Unit<N>> {
-    let mut proto_unit = String::new();
-    let mut proto_exponent = String::new();
+    let mut proto_unit = String::with_capacity(4);
+    let mut proto_exponent = String::with_capacity(4);
     let mut cur_state = BuildState::Unit;
+    let mut inverse = false;
 
-    let mut units = Vec::<(String, i16)>::new();
+    let mut unit = Unit::new(NUL);
 
-    for c in s.chars().filter(|&c| c != '^').map(super_to_num).chain(Some(' ')) {
+    for c in s.replace('/', " /").chars().filter(|&c| c != '^').map(super_to_num).chain(Some(' ')) {
+        let c = match c {
+            '*' | '·' => ' ',
+            c => c,
+        };
         if proto_unit.is_empty() && c == ' ' {
             continue
         }
         match cur_state {
+            _ if c == '/' => inverse = true,
             BuildState::Unit if c == ' ' => {
-                let unit = replace(&mut proto_unit, String::new());
-                units.push((unit, 1));
+                let un = sys.get_unit(&proto_unit)? * if inverse{-1}else{1};
+                proto_unit.clear();
+                unit = unit + un;
+                inverse = false;
             }
             BuildState::Unit => {
                 if c.is_alphabetic() {
@@ -32,24 +38,30 @@ pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Option<Unit<N>> 
                 } else if c == '-' || c.is_numeric() {
                     cur_state = BuildState::Exponent;
                     proto_exponent.push(c);
+                } else {
+                    return None;
                 }
             }
             BuildState::Exponent => {
                 if c == '-' || c.is_numeric() {
                     proto_exponent.push(c);
                 } else if c.is_alphabetic() || c == ' ' {
-                    let unit = replace(&mut proto_unit, String::new());
-                    let exponent = replace(&mut proto_exponent, String::new());
-                    units.push((unit, exponent.parse().ok()?));
+                    let ex = proto_exponent.parse().ok()?;
+                    let un = sys.get_unit(&proto_unit)? * ex * if inverse{-1}else{1};
+                    unit = unit + un;
+                    inverse = false;
+                    proto_exponent.clear();
+                    proto_unit.clear();
 
-                    proto_unit.push(c);
+                    if c != ' ' {
+                        proto_unit.push(c);
+                    }
                     cur_state = BuildState::Unit;
+                } else {
+                    return None;
                 }
             }
         }
     }
-
-    units.into_iter()
-        .map(|(n, i)| sys.get_unit(&n).map(|u| u*i))
-        .fold(Some(Unit::new(NUL)), |acc, elem| acc.and_then(|a| elem.map(|e| a+e)))
+    Some(unit)
 }

@@ -11,7 +11,8 @@ fn main() {
     stdin().read_line(&mut s).unwrap();
     s = s.trim().to_owned();
     let unit = unit_from_str(&si, &s).unwrap();
-    let val = Value(0., unit);
+    let val = Value(1., unit);
 
     println!("Unit: {}\nFactor: {}", si.display(&val), unit.factor);
+    println!("Dimension: {:#}", unit.dimension);
 }
