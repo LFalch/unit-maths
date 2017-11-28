@@ -78,13 +78,17 @@ fn main() {
     let mut vars = HashMap::new();
 
     let mut s = String::new();
-    loop {
+    'cmd_loop: loop {
         {
             stdin().read_line(&mut s).unwrap();
             let mut last_c = s.chars().last().unwrap();
             while last_c == '\n' || last_c == '\r' {
                 s.pop();
-                last_c = s.chars().last().unwrap();
+                if let Some(c) = s.chars().last() {
+                    last_c = c;
+                } else {
+                    continue 'cmd_loop;
+                }
             }
         }
 
