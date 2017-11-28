@@ -84,6 +84,10 @@ impl<N: Float> UnitSystem<N> {
     pub fn val(&self, val: N, unit_str: &str) -> Option<Value<N>> {
         Some(Value(val, self.unit_from_str(unit_str)?))
     }
+    pub fn val_s(&self, value: &str) -> Option<Value<N>>
+    where N: std::str::FromStr {
+        value_from_str(self, value)
+    }
     pub fn as_(&self, val: Value<N>, unit: &str) -> Value<N> {
         self.cast(val, &self.unit_from_str(unit).unwrap())
     }

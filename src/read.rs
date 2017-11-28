@@ -65,3 +65,17 @@ pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Option<Unit<N>> 
     }
     Some(unit)
 }
+
+use std::str::FromStr;
+
+pub fn value_from_str<N: Float + FromStr>(sys: &UnitSystem<N>, s: &str) -> Option<Value<N>> {
+    let i = s.find(<char>::is_whitespace);
+
+    if let Some(index) = i {
+        let (val, unit) = s.split_at(index);
+
+        Some(Value(val.parse().ok()?, unit_from_str(sys, unit)?))
+    } else {
+        None
+    }
+}
