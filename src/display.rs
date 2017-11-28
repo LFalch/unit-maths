@@ -21,8 +21,10 @@ impl<'a, N: 'a + Float + Display> Display for UnitDisplay<'a, N> {
             });
 
         if let Some((name, unit)) = nu {
-            (self.val.0  * self.val.1.factor / unit.factor).fmt(f)?;
-            return write!(f, " {}", name)
+            if self.val.1.factor != N::one() || unit.factor == N::one() {
+                (self.val.0  * self.val.1.factor / unit.factor).fmt(f)?;
+                return write!(f, " {}", name)
+            }
         }
 
         let Dimension{mass,length,time,current,temperature,substance_amount,luminous_intensity} = self.val.1.dimension;
