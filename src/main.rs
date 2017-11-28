@@ -4,7 +4,7 @@ use unit_maths::*;
 
 macro_rules! print_eval {
     ($eval:expr) => (
-        print!("{} = {}", stringify!($eval), $eval);
+        println!("{} = {}", stringify!($eval), $eval);
     );
     ($eval:expr, $si:expr) => (
         print!("{} = {}", stringify!($eval), $si.display(&$eval));
