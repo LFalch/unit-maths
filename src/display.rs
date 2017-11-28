@@ -1,19 +1,17 @@
-use std::fmt::Debug;
-
-use num::traits::{Num, Signed};
+use num::Float;
 
 use super::*;
 
-pub struct UnitDisplay<'a, N: 'a + Num> {
+pub struct UnitDisplay<'a, N: 'a + Float> {
     val: &'a Value<N>,
     sys: &'a UnitSystem<N>,
 }
 
-pub fn make_display<'a, N: 'a + Num>(sys: &'a UnitSystem<N>, val: &'a Value<N>) -> UnitDisplay<'a, N> {
+pub fn make_display<'a, N: 'a + Float>(sys: &'a UnitSystem<N>, val: &'a Value<N>) -> UnitDisplay<'a, N> {
     UnitDisplay {val, sys}
 }
 
-impl<'a, N: 'a + Num + Debug + Display + Copy + PartialOrd + Signed> Display for UnitDisplay<'a, N> {
+impl<'a, N: 'a + Float + Display> Display for UnitDisplay<'a, N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let nu = self.sys.units
             .iter()
@@ -23,7 +21,7 @@ impl<'a, N: 'a + Num + Debug + Display + Copy + PartialOrd + Signed> Display for
             });
 
         if let Some((name, unit)) = nu {
-            Display::fmt(&(self.val.0  * self.val.1.factor / unit.factor), f)?;
+            (self.val.0  * self.val.1.factor / unit.factor).fmt(f)?;
             return write!(f, " {}", name)
         }
 
