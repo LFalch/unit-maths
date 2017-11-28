@@ -10,16 +10,16 @@ enum BuildState {
     Exponent
 }
 
-pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Unit<N> {
+pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Option<Unit<N>> {
     let mut proto_unit = String::new();
     let mut proto_exponent = String::new();
     let mut cur_state = BuildState::Unit;
 
     let mut units = Vec::<(String, i16)>::new();
 
-    s.chars().filter(|&c| c != '^').map(super_to_num).chain(Some(' ')).for_each(|c| {
+    for c in s.chars().filter(|&c| c != '^').map(super_to_num).chain(Some(' ')) {
         if proto_unit.is_empty() && c == ' ' {
-            return
+            continue
         }
         match cur_state {
             BuildState::Unit if c == ' ' => {
@@ -40,16 +40,16 @@ pub fn unit_from_str<N: Float>(sys: &UnitSystem<N>, s: &str) -> Unit<N> {
                 } else if c.is_alphabetic() || c == ' ' {
                     let unit = replace(&mut proto_unit, String::new());
                     let exponent = replace(&mut proto_exponent, String::new());
-                    units.push((unit, exponent.parse().unwrap()));
+                    units.push((unit, exponent.parse().ok()?));
 
                     proto_unit.push(c);
                     cur_state = BuildState::Unit;
                 }
             }
         }
-    });
+    }
 
     units.into_iter()
-        .map(|(n, i)| sys[&n]*i)
-        .fold(Unit::new(NUL), |acc, elem| elem + acc)
+        .map(|(n, i)| sys.get_unit(&n).map(|u| u*i))
+        .fold(Some(Unit::new(NUL)), |acc, elem| acc.and_then(|a| elem.map(|e| a+e)))
 }

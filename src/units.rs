@@ -165,7 +165,7 @@ impl<N: Float> Mul<i16> for Unit<N> {
     fn mul(self, rhs: i16) -> Self::Output {
         let Unit{factor, dimension} = self;
         Unit{
-            factor: factor,
+            factor: factor.powi(rhs as i32),
             dimension: rhs*dimension
         }
     }
