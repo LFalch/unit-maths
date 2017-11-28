@@ -7,13 +7,14 @@ macro_rules! print_eval {
         println!("{} = {}", stringify!($eval), $eval);
     );
     ($eval:expr, $si:expr) => (
-        print!("{} = {}", stringify!($eval), $si.display(&$eval));
-        println!(" ({:#})", $eval.1.dimension);
+        let x = $eval;
+        print!("{} = {}", stringify!($eval), $si.display(&x));
+        println!(" ({:#})", x.1.dimension);
     );
     ($eval:expr, $si:expr, $assign:ident) => (
         let $assign = $eval;
         print!("{} := {} = {}", stringify!($assign), stringify!($eval), $si.display(&$assign));
-        println!(" ({:#})", $eval.1.dimension);
+        println!(" ({:#})", $assign.1.dimension);
     );
 }
 
