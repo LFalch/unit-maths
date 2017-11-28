@@ -53,12 +53,22 @@ fn line_to_command(s: &str, si: &UnitSystem<f64>) -> Option<Command> {
 }
 
 fn evaluate(eval: Eval, vars: &HashMap<String, Value<f64>>) -> Option<Value<f64>> {
+    let get_or_eval = |n: String| {
+        vars.get(&n).cloned()
+            .or_else(|| n.parse().ok().and_then(|v| Some( Value(v, Unit::new(NUL)) ) ) )
+    };
+
     Some(match eval {
-        Eval::Add(a, b) => *vars.get(&a)? + *vars.get(&b)?,
-        Eval::Sub(a, b) => *vars.get(&a)? - *vars.get(&b)?,
-        Eval::Mul(a, b) => *vars.get(&a)? * *vars.get(&b)?,
-        Eval::Div(a, b) => *vars.get(&a)? / *vars.get(&b)?,
-        Eval::Pow(_, _) => panic!("No powey wowy yet"),
+        Eval::Add(a, b) => get_or_eval(a)? + get_or_eval(b)?,
+        Eval::Sub(a, b) => get_or_eval(a)? - get_or_eval(b)?,
+        Eval::Mul(a, b) => get_or_eval(a)? * get_or_eval(b)?,
+        Eval::Div(a, b) => get_or_eval(a)? / get_or_eval(b)?,
+        Eval::Pow(a, b) => {
+            let n: i16 = b.parse().ok()?;
+            let Value(v, u) = get_or_eval(a)?;
+
+            Value(v.powi(n as i32), u*n)
+        },
         Eval::Func(a, b) => func(&a, *vars.get(&b)?),
     })
 }
