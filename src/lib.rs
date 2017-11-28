@@ -41,13 +41,13 @@ fn super_to_num(c: char) -> char {
 fn to_superscript(src: &str) -> String {
     src.chars().map(num_to_super).collect()
 }
-#[inline]
-fn superscript_to_number(src: &str) -> String {
-    src.chars().map(super_to_num).collect()
-}
 
 #[test]
 fn super_test() {
+    #[inline]
+    fn superscript_to_number(src: &str) -> String {
+        src.chars().map(super_to_num).collect()
+    }
     assert_eq!(to_superscript("-124"), "⁻¹²⁴");
     assert_eq!(to_superscript("asdg ja-kage4²"), "asdg ja⁻kage⁴²");
     assert_eq!(superscript_to_number("⁻¹²⁴"), "-124");
