@@ -4,13 +4,22 @@ use std::ops::{Add, Mul, Sub};
 use std::fmt::{self, Display};
 
 #[derive(Debug, PartialEq, Eq, Default, Copy, Clone, Hash)]
+/// Struct to keep track of the dimension of a quantity for dimensional analysis.
+/// Based on the SI units.
 pub struct Dimension {
+    /// The exponent of length
     pub length: i16,
+    /// The exponent of time
     pub time: i16,
+    /// The exponent of mass
     pub mass: i16,
+    /// The exponent of current
     pub current: i16,
+    /// The exponent of temperature
     pub temperature: i16,
+    /// The exponent of amount of substance
     pub substance_amount: i16,
+    /// The exponent of luminous intensity
     pub luminous_intensity: i16
 }
 
@@ -20,11 +29,13 @@ fn super_test() {
     assert_eq!(to_superscript("asdg ja-kage4²"), "asdg ja⁻kage⁴²");
 }
 
+/// The null-dimension, indicating a dimensionless quantity
 pub const NUL: Dimension = Dimension{mass:0,length:0,time:0,current:0,temperature:0,substance_amount:0,luminous_intensity:0};
 
 macro_rules! dims {
     ($($cnst:ident, $display_name:expr; {$($n:ident : $v:expr),+},)*) => (
         $(
+            /// A dimension constant
             pub const $cnst: Dimension = Dimension{$($n: $v,)+..NUL};
         )*
         impl Display for Dimension {

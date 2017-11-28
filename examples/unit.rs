@@ -10,7 +10,7 @@ fn main() {
     let mut s = String::new();
     stdin().read_line(&mut s).unwrap();
     s = s.trim().to_owned();
-    let unit = unit_from_str(&si, &s).unwrap();
+    let unit = si.unit_from_str(&s).unwrap();
     let val = Value(1., unit);
 
     println!("Unit: {}\nFactor: {}", si.display(&val), unit.factor);

@@ -1,7 +1,11 @@
+use std::fmt::{self, Display};
 use num::Float;
 
 use super::*;
 
+/// Struct that implements `Display` to write a unit with.
+///
+/// Made using `UnitSystem::display`
 pub struct UnitDisplay<'a, N: 'a + Float> {
     val: &'a Value<N>,
     sys: &'a UnitSystem<N>,

@@ -1,7 +1,7 @@
-extern crate num;
+#![warn(missing_docs)]
+//! Crate for doing maths with units
 
-use std::ops::{Add, Mul, Sub};
-use std::fmt::{self, Display};
+extern crate num;
 
 fn num_to_super(c: char) -> char {
     match c {
@@ -64,4 +64,4 @@ mod display;
 pub use display::UnitDisplay;
 
 mod read;
-pub use read::*;
+use read::*;
