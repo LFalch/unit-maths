@@ -65,6 +65,7 @@ impl<N: Float> UnitSystem<N> {
         ret.units.insert("kN", Unit::with_factor(FORCE, N::from(1e3).unwrap()));
         ret.units.insert("W", Unit::new(POWER));
         ret.units.insert("V", Unit::new(VOLTAGE));
+        ret.units.insert("mA", Unit::with_factor(CURRENT, N::from(1e-3).unwrap()));
         ret.units.insert("Ω", Unit::new(RESISTANCE));
         ret.units.insert("C", Unit::new(CHARGE));
         ret.units.insert("Pa", Unit::new(PRESSURE));
