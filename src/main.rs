@@ -27,9 +27,15 @@ fn main() {
     let vol2 = si.val(15., "mL");
     let con2 = si.val(0.1, "M");
 
+    let m3 = si["m"]*3;
+
     print_eval!(vol1, si);
+    print_eval!(si.as_(vol1, "L"), si);
+    print_eval!(si.cast(vol1, &m3), si);
     print_eval!(con1, si);
     print_eval!(vol2, si);
+    print_eval!(si.as_(vol2, "L"), si);
+    print_eval!(si.cast(vol2, &m3), si);
     print_eval!(con2, si);
 
     print_eval!(vol1*con1, si, amt1);

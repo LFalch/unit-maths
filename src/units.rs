@@ -80,6 +80,16 @@ impl<N: Float> UnitSystem<N> {
     pub fn val(&self, val: N, unit: &str) -> Value<N> {
         Value(val, self.units[unit])
     }
+    pub fn as_(&self, val: Value<N>, unit: &str) -> Value<N> {
+        self.cast(val, &self[unit])
+    }
+    pub fn cast(&self, val: Value<N>, unit: &Unit<N>) -> Value<N> {
+        if val.1.dimension == unit.dimension {
+            Value(val.0 * (val.1.factor/unit.factor), *unit)
+        } else {
+            panic!("Tried to cast from {:#} to {:#}", val.1.dimension, unit.dimension);
+        }
+    }
     pub fn display<'a>(&'a self, val: &'a Value<N>) -> UnitDisplay<'a, N> {
         display::make_display(self, val)
     }
