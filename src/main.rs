@@ -3,6 +3,9 @@ extern crate unit_maths;
 use unit_maths::*;
 
 macro_rules! print_eval {
+    ($eval:expr) => (
+        print!("{} = {}", stringify!($eval), $eval);
+    );
     ($eval:expr, $si:expr) => (
         print!("{} = {}", stringify!($eval), $si.display(&$eval));
         println!(" ({:#})", $eval.1.dimension);
@@ -17,9 +20,10 @@ macro_rules! print_eval {
 fn main() {
     let si = UnitSystem::<f64>::si();
 
+    // Strong acid
     let vol1 = si.val(30., "mL");
     let con1 = si.val(0.1, "M");
-
+    // Strong base
     let vol2 = si.val(15., "mL");
     let con2 = si.val(0.1, "M");
 
@@ -30,7 +34,8 @@ fn main() {
 
     print_eval!(vol1*con1, si, amt1);
     print_eval!(vol2*con2, si, amt2);
+    print_eval!(amt1-amt2, si, amt_hydronium);
     print_eval!(vol1+vol2, si, vol);
-    print_eval!(amt1/vol, si);
-    print_eval!(amt2/vol, si);
+    print_eval!(amt_hydronium/vol, si, con);
+    print_eval!(-con.0.log10());
 }
