@@ -19,6 +19,7 @@ enum Eval {
 enum Command {
     Define(String, Value<f64>),
     Eval(Eval),
+    Inspect(String),
     Assign(String, Eval)
 }
 
@@ -37,6 +38,7 @@ fn line_to_command(s: &str, si: &UnitSystem<f64>) -> Option<Command> {
                 Command::Define(first_arg, si.val_s(&s)?)
             }
         }
+        "?" => Command::Inspect(first_arg),
         "+" => Command::Eval(Eval::Add(first_arg, words.next()?.to_owned())),
         "-" => Command::Eval(Eval::Sub(first_arg, words.next()?.to_owned())),
         "*" => Command::Eval(Eval::Mul(first_arg, words.next()?.to_owned())),
@@ -102,6 +104,13 @@ fn main() {
                     if let Some(val) = evaluate(eval, &vars) {
                         println!("= {}", si.display(&val));
                         vars.insert(name, val);
+                    } else {
+                        println!("No such variable");
+                    }
+                }
+                Command::Inspect(name) => {
+                    if let Some(val) = vars.get(&name) {
+                        println!("= {} ({:#})", si.display(&val), val.1.dimension);
                     } else {
                         println!("No such variable");
                     }
