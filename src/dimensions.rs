@@ -91,11 +91,13 @@ dims!{
 
     VELOCITY, "Velocity"; {length:1,time:-1},
     ACCELERATION, "Acceleration"; {length:1,time:-2},
+    MOMENTUM, "Momentum"; {length:1,mass:1,time:-1},
+    FORCE, "Force"; {mass:1,length:1,time:-2},
+    ACTION, "Action"; {mass:1,length:2,time:-1},
+    ENERGY, "Energy"; {mass:1,length:2,time:-2},
+
     MOLAR_MASS, "Molar Mass"; {substance_amount:1,mass: -1},
     CONCENTRATION, "Concentration"; {substance_amount:1,length:-3},
-    FORCE, "Force"; {mass:1,length:1,time:-2},
-
-    ENERGY, "Energy"; {mass:1,length:2,time:-2},
 
     POWER, "Power"; {mass:1,length:2,time:-3},
     VOLTAGE, "Voltage"; {mass:1,length:2,time:-3,current:-1},
