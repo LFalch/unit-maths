@@ -5,6 +5,8 @@ use std::collections::HashMap;
 
 use unit_maths::*;
 
+mod tokeniser;
+
 #[derive(Debug)]
 enum Eval {
     Add(String, String),
