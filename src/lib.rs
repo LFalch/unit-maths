@@ -3,7 +3,7 @@
 
 extern crate num;
 
-fn num_to_super(c: char) -> char {
+pub fn num_to_super(c: char) -> char {
     match c {
         '-' => '⁻',
         '0' => '⁰',
@@ -20,7 +20,7 @@ fn num_to_super(c: char) -> char {
     }
 }
 
-fn super_to_num(c: char) -> char {
+pub fn super_to_num(c: char) -> char {
     match c {
         '⁻' => '-',
         '⁰' => '0',
