@@ -2,7 +2,7 @@
 //! Crate for doing maths with units
 
 extern crate num;
-
+/// Ay
 pub fn num_to_super(c: char) -> char {
     match c {
         '-' => '⁻',
@@ -19,7 +19,7 @@ pub fn num_to_super(c: char) -> char {
         c => c
     }
 }
-
+/// Ay
 pub fn super_to_num(c: char) -> char {
     match c {
         '⁻' => '-',

@@ -96,7 +96,7 @@ dims!{
 
     AREA, "Area"; {length:2},
     VOLUME, "Volume"; {length:3},
-    DENSITY, "Density"; {length:3, mass:-1},
+    DENSITY, "Density"; {mass:1,length:-3},
 
     FREQUENCY, "Frequency"; {time:-1},
 
@@ -107,7 +107,7 @@ dims!{
     ACTION, "Action"; {mass:1,length:2,time:-1},
     ENERGY, "Energy"; {mass:1,length:2,time:-2},
 
-    MOLAR_MASS, "Molar Mass"; {substance_amount:1,mass: -1},
+    MOLAR_MASS, "Molar Mass"; {mass:1,substance_amount:-1},
     CONCENTRATION, "Concentration"; {substance_amount:1,length:-3},
 
     POWER, "Power"; {mass:1,length:2,time:-3},
