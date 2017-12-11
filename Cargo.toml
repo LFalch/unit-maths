@@ -1,5 +1,5 @@
 [package]
-name = "unit-maths"
+name = "pcm-calc"
 version = "0.1.0"
 authors = ["LFalch <lucas@wasd.dk>"]
 
