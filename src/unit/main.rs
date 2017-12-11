@@ -1,9 +1,9 @@
-extern crate unit_maths;
+extern crate pcm_calc;
 
 use std::io::stdin;
 use std::collections::HashMap;
 
-use unit_maths::*;
+use pcm_calc::*;
 
 mod tokeniser;
 mod infix;
